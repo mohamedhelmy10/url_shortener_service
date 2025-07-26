@@ -45,10 +45,18 @@ Rails.application.configure do
 
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
+  config.solid_cache.connects_to = { database: { writing: :primary, reading: :primary } } ## ADDED FOR RENDER DEPLOYMENT
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
   config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  config.solid_queue.connects_to = { database: { writing: :primary, reading: :primary } } ## MODIFIED FOR RENDER DEPLOYMENT
+
+  # Configure Action Cable to use an in-memory adapter (async) as we are not using Redis or a dedicated 'cable' DB.
+  # This prevents the "cable database not configured" error.
+  config.action_cable.adapter = :async ## ADDED FOR RENDER DEPLOYMENT
+  config.action_cable.url = nil        ## ADDED FOR RENDER DEPLOYMENT
+  config.action_cable.mount_path = nil ## ADDED FOR RENDER DEPLOYMENT
+
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
