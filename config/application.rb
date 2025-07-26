@@ -1,6 +1,18 @@
 require_relative "boot"
 
-require "rails/all"
+# These are the Railties typically included in an API-only app.
+# They replace `require "rails/all"`.
+require "active_model/railtie"
+require "active_job/railtie"
+require "active_record/railtie"
+require "active_storage/engine"
+require "action_controller/railtie"
+require "action_mailer/railtie"
+# require "action_mailbox/engine" # Usually not needed for API-only
+# require "action_text/engine"   # Usually not needed for API-only
+require "action_view/railtie" # Potentially needed if you render HTML emails or have some views, otherwise can be omitted.
+# require "action_cable/engine"  # OMIT THIS for now, especially if you're not using websockets!
+require "rails/test_unit/railtie" # Only if you use minitest/test_unit
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
