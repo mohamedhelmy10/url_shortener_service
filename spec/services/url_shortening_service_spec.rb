@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe UrlShorteningService do
-
   describe '.encode' do
     context 'when encoding a new URL' do
       let(:original_url) { 'https://www.new-url-for-encoding.com/path' }

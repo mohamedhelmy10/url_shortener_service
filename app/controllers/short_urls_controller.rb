@@ -1,26 +1,25 @@
 class ShortUrlsController < ApplicationController
+  before_action :set_short_url, only: [ :decode ]
 
-  before_action :set_short_url, only: [:decode]
-
-  #POST /encode
+  # POST /encode
   def encode
     original_url = short_url_params[:original_url]
     result = UrlShorteningService.encode(original_url)
-    
+
     if result[:success]
       short_url = "#{request.base_url}/#{result[:short_url].short_code}"
-      render json: {short_url: short_url}
+      render json: { short_url: short_url }
     else
-      render json: {error: "Failed to encode URL", details: result[:errors]}, status: :unprocessable_entity
+      render json: { error: "Failed to encode URL", details: result[:errors] }, status: :unprocessable_entity
     end
   end
 
-  #GET /decode
+  # GET /decode
   def decode
     if @short_url
-      render json: {original_url: @short_url.original_url}
+      render json: { original_url: @short_url.original_url }
     else
-      render json: {error: "Short URL not found"}, status: :not_found
+      render json: { error: "Short URL not found" }, status: :not_found
     end
   end
 

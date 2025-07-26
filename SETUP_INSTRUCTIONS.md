@@ -25,6 +25,43 @@ sudo -u postgres psql -c "SELECT version();"
 pg_config --version
 ```
 
+## Project Structure
+
+Understanding the codebase organization will help you navigate and work with the application:
+
+```
+url_shortener_service/
+├── app/
+│   ├── controllers/
+│   │   └── short_urls_controller.rb    # API endpoints for encode/decode
+│   ├── models/
+│   │   └── short_url.rb                # Database model with validations
+│   └── services/
+│       └── url_shortening_service.rb   # Business logic for URL shortening
+├── config/
+│   ├── routes.rb                       # URL routing configuration
+│   └── database.yml                    # Database configuration
+├── db/
+│   ├── migrate/                        # Database migration files
+│   └── schema.rb                       # Current database schema
+├── spec/
+│   ├── factories/                      # Test data factories
+│   ├── models/                         # Model unit tests
+│   ├── services/                       # Service unit tests
+│   └── requests/                       # API endpoint tests
+├── Gemfile                             # Ruby dependencies
+├── README.md                           # Project overview and API docs
+└── SETUP_INSTRUCTIONS.md               # This setup guide
+```
+
+### Key Files Explained
+
+- **`app/controllers/short_urls_controller.rb`**: Handles HTTP requests for encoding and decoding URLs
+- **`app/models/short_url.rb`**: Defines the database model with validations and callbacks
+- **`app/services/url_shortening_service.rb`**: Contains the core business logic for URL shortening
+- **`config/routes.rb`**: Defines the API endpoints (`/encode`, `/decode`, `/:short_code`)
+- **`spec/`**: Contains all test files organized by type (models, services, requests)
+
 ## Why These Prerequisites Are Needed
 
 ### PostgreSQL
