@@ -90,3 +90,156 @@ This URL shortener service implements several security measures to protect again
 6. **API Authentication**: Consider implementing API keys for production use
 7. **Database Security**: Use connection pooling and prepared statements
 8. **Monitoring**: Set up alerts for unusual traffic patterns
+
+## Scaling Considerations
+
+This URL shortener service is designed with scalability in mind. Here's how the implementation can scale up to handle high traffic and large datasets:
+
+### Collision Problem & Solutions
+
+#### **Current Implementation**
+```ruby
+def generate_short_code
+  loop do
+    code = SecureRandom.alphanumeric(6)
+    return code unless ShortUrl.exists?(short_code: code)
+  end
+end
+```
+
+#### **Scaling Challenges**
+1. **Database Lookups**: Each collision check requires a database query
+2. **Performance Degradation**: More collisions = more database hits
+3. **Concurrency Issues**: Multiple requests might generate same code simultaneously
+
+#### **Scaling Solutions**
+
+##### **1. Pre-generated Code Pools**
+```ruby
+# Generate codes in batches with duplicate prevention
+class ShortCodePool
+  def self.generate_batch(size = 1000)
+    codes = Set.new
+    
+    # Keep generating until we have enough unique codes
+    while codes.size < size
+      new_code = SecureRandom.alphanumeric(6)
+      codes.add(new_code) unless ShortUrl.exists?(short_code: new_code)
+    end
+    
+    # Bulk insert available codes
+    ShortCodePool.create(codes.map { |code| { code: code, used: false } })
+  end
+  
+  def self.get_available_code
+    # Try to get an available code
+    pool = ShortCodePool.where(used: false).first
+    
+    if pool
+      pool.update(used: true)
+      return pool.code
+    else
+      # No codes available, generate new batch
+      Rails.logger.info "ShortCodePool empty, generating new batch..."
+      generate_batch(1000)
+      
+      # Try again after generating new batch
+      pool = ShortCodePool.where(used: false).first
+      if pool
+        pool.update(used: true)
+        return pool.code
+      else
+        # Still no codes available (shouldn't happen, but safety check)
+        Rails.logger.error "Failed to generate new ShortCodePool batch"
+        return nil
+      end
+    end
+  end
+  
+  # Usage with validation
+  def self.get_available_code_safe
+    code = get_available_code
+    if code.nil?
+      raise "Unable to generate short code - pool generation failed"
+    end
+    code
+  end
+```
+
+##### **2. Increased Code Length**
+```ruby
+# Scale from 6 to 8 characters for more combinations
+def generate_short_code
+  SecureRandom.alphanumeric(8)  # 62^8 = ~218 trillion combinations
+end
+```
+
+##### **3. Distributed Generation**
+```ruby
+# Use unique identifiers to prevent collisions
+def generate_short_code
+  timestamp = Time.current.to_i
+  random_part = SecureRandom.alphanumeric(4)
+  "#{timestamp}#{random_part}"
+end
+```
+
+##### **4. Database Optimization**
+```ruby
+# Add database indexes for performance
+add_index :short_urls, :short_code, unique: true
+add_index :short_urls, :original_url
+add_index :short_urls, :created_at
+
+# Use database-level uniqueness constraints
+validates :short_code, uniqueness: true
+```
+
+### **High Traffic Scaling**
+
+#### **1. Caching Strategy**
+```ruby
+# Redis caching for frequently accessed URLs
+class ShortUrl < ApplicationRecord
+  def self.find_by_short_code_cached(code)
+    Rails.cache.fetch("short_url:#{code}", expires_in: 1.hour) do
+      find_by(short_code: code)
+    end
+  end
+end
+```
+
+#### **2. Database Sharding**
+```ruby
+# Shard by short_code prefix
+class ShortUrl < ApplicationRecord
+  def self.shard_for_code(code)
+    shard_id = code.first.ord % 10  # Distribute across 10 shards
+    "shard_#{shard_id}"
+  end
+end
+```
+
+### **Recommended Scaling Roadmap**
+
+#### **Phase 1: Immediate (Current)**
+- ✅ Current implementation with collision detection
+- ✅ Database indexes
+- ✅ Basic error handling
+
+#### **Phase 2: Medium Scale (10K-100K URLs/day)**
+- Add Redis caching
+- Implement pre-generated code pools
+- Add monitoring and alerting
+
+#### **Phase 3: High Scale (1M+ URLs/day)**
+- Database sharding
+
+#### **Phase 4: Enterprise Scale (10M+ URLs/day)**
+- Global distribution
+- Advanced caching strategies
+
+
+This scaling approach ensures the service can grow from handling hundreds of requests per day to millions, while maintaining performance and reliability.
+
+## API Endpoints
