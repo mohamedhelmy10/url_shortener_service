@@ -47,4 +47,9 @@ group :development, :test do
 
   # Load environment variables from .env file
   gem "dotenv-rails", require: "dotenv/load"
+
+  # RSpec for testing
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "shoulda-matchers"
 end

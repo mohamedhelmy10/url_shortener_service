@@ -1,6 +1,6 @@
 class ShortUrl < ApplicationRecord
   validates :original_url, presence: true, uniqueness: true, format: {with: URI::regexp(%w[http https]), message: "must be a valid URL"}
-  validates :short_code, presence: true, uniqueness: true, length: {in: 5..10}
+  validates :short_code, presence: true, uniqueness: true, length: {in: 6..10}
 
   before_validation :generate_short_code, on: :create
 
