@@ -15,6 +15,9 @@ gem "puma", ">= 5.0"
 # Rate limiting for API protection
 gem "rack-attack"
 
+# Redis for rate limiting cache
+gem "redis", "~> 5.0"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
