@@ -1,5 +1,18 @@
 class Rack::Attack
-  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
+  # Configure cache store based on environment
+  cache_store = begin
+    redis_url = ENV['REDIS_URL'] || 'redis://localhost:6379/0'
+    redis_client = Redis.new(url: redis_url)
+    redis_client.ping
+    puts "✅ Redis connection successful!"
+    ActiveSupport::Cache::RedisCacheStore.new(url: redis_url)
+  rescue => e
+    puts "❌ Redis connection failed: #{e.message}"
+    Rails.logger.warn "Redis not available, using memory store: #{e.message}"
+    ActiveSupport::Cache::MemoryStore.new
+  end
+
+  Rack::Attack.cache.store = cache_store
 
   throttle("encode by ip", limit: 2, period: 1.minute) do |request|
     if request.path == "/encode" && request.post?
