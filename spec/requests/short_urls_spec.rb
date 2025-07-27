@@ -1,6 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe "ShortUrls", type: :request do
+  before do
+    # Clear rate limiting cache
+    Rails.cache.clear
+    Rack::Attack.cache.store.clear
+  end
+
   describe "POST /encode" do
     let(:original_url) { 'https://codesubmit.io/library/react' }
 
