@@ -58,7 +58,7 @@ This URL shortener service implements several security measures to protect again
   - 6-10 character alphanumeric codes provide 62^6 to 62^10 possible combinations (62 = 26 lowercase + 26 uppercase + 10 digits)
   - 6-character codes: ~56.8 billion combinations
   - 10-character codes: ~839 quadrillion combinations
-  - Rate limiting should be implemented in production on the decode endpoint
+  - **Rate limiting implemented**: 5 requests per minute per IP on decode endpoint
   - Short codes are randomly generated using `SecureRandom.alphanumeric(6)`
 
 #### 3. **SQL Injection**
@@ -74,12 +74,15 @@ This URL shortener service implements several security measures to protect again
   - JSON API responses with proper content-type headers
   - No user-generated HTML rendering
   - Input validation prevents script injection
+  - **Rate limiting implemented**: Blocks requests with suspicious patterns
 
 #### 5. **Denial of Service (DoS)**
 - **Attack Vector**: Flooding the service with requests or creating excessive short URLs
 - **Mitigation**:
   - Duplicate URL prevention reduces database bloat
-  - Rate limiting should be implemented in production
+  - **Rate limiting implemented**: 
+    - Encode endpoint: 2 requests per minute per IP
+    - Decode endpoint: 5 requests per minute per IP
   - Database indexes on `original_url` and `short_code` for performance
 
 #### 6. **Short Code Collision Attacks**
@@ -89,6 +92,27 @@ This URL shortener service implements several security measures to protect again
   - Loop continues until unique code is generated
   - Database uniqueness constraint as backup
 
+### Rate Limiting Implementation
+
+This service implements comprehensive rate limiting using **Rack::Attack** to protect against abuse:
+
+#### **Rate Limits by Endpoint**
+- **Encode endpoint**: 2 requests per minute per IP (more restrictive)
+- **Decode endpoint**: 5 requests per minute per IP (prevents enumeration)
+
+#### **Security Features**
+- **Custom Error Responses**: Returns proper HTTP 429 (Too Many Requests) with Retry-After headers
+- **Logging**: Logs rate limit violations requests for monitoring
+
+#### **Response Headers**
+```json
+{
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Please try again later.",
+  "retry_after": "60 seconds"
+}
+```
+
 ### Security Best Practices Implemented
 
 1. **Input Validation**: All URLs are validated for format and protocol
@@ -96,15 +120,16 @@ This URL shortener service implements several security measures to protect again
 3. **Error Handling**: Generic error messages prevent information disclosure
 4. **Database Security**: Parameterized queries prevent SQL injection
 5. **Random Generation**: Secure random number generation for short codes
+6. **Rate Limiting**: Comprehensive rate limiting with Rack::Attack
 
 ### Recommended Production Security Measures
 
-1. **Rate Limiting**: Implement request rate limiting per IP
+1. **Rate Limiting**: Implemented with Rack::Attack
 2. **HTTPS**: Use HTTPS in production for all communications
-4. **Logging**: Implement security event logging and monitoring
-6. **API Authentication**: Consider implementing API keys for production use
-7. **Database Security**: Use connection pooling and prepared statements
-8. **Monitoring**: Set up alerts for unusual traffic patterns
+3. **Logging**: Implement security event logging and monitoring
+4. **API Authentication**: Consider implementing API keys for production use
+5. **Database Security**: Use connection pooling and prepared statements
+6. **Monitoring**: Set up alerts for unusual traffic patterns
 
 ## Scaling Considerations
 

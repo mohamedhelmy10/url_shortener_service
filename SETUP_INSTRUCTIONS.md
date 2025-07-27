@@ -40,7 +40,9 @@ url_shortener_service/
 │       └── url_shortening_service.rb   # Business logic for URL shortening
 ├── config/
 │   ├── routes.rb                       # URL routing configuration
-│   └── database.yml                    # Database configuration
+│   ├── database.yml                    # Database configuration
+│   └── initializers/
+│       └── rack_attack.rb              # Rate limiting configuration
 ├── db/
 │   ├── migrate/                        # Database migration files
 │   └── schema.rb                       # Current database schema
@@ -48,7 +50,9 @@ url_shortener_service/
 │   ├── factories/                      # Test data factories
 │   ├── models/                         # Model unit tests
 │   ├── services/                       # Service unit tests
-│   └── requests/                       # API endpoint tests
+│   ├── requests/                       # API endpoint tests
+│   └── requests/
+│       └── rate_limiting_spec.rb       # Rate limiting tests
 ├── Gemfile                             # Ruby dependencies
 ├── README.md                           # Project overview and API docs
 └── SETUP_INSTRUCTIONS.md               # This setup guide
@@ -60,7 +64,22 @@ url_shortener_service/
 - **`app/models/short_url.rb`**: Defines the database model with validations and callbacks
 - **`app/services/url_shortening_service.rb`**: Contains the core business logic for URL shortening
 - **`config/routes.rb`**: Defines the API endpoints (`/encode`, `/decode`, `/:short_code`)
+- **`config/initializers/rack_attack.rb`**: Configures rate limiting and security rules
 - **`spec/`**: Contains all test files organized by type (models, services, requests)
+
+## Features
+
+This URL shortener service includes the following features:
+
+- **URL Encoding**: Convert long URLs into short, shareable links
+- **URL Decoding**: Retrieve original URLs from short codes
+- **Duplicate Prevention**: Same original URL always returns the same short code
+- **Validation**: Ensures URLs are valid and properly formatted
+- **Rate Limiting**: Comprehensive rate limiting to prevent abuse
+  - Encode endpoint: 2 requests per minute per IP
+  - Decode endpoint: 5 requests per minute per IP
+- **RESTful API**: Clean JSON API endpoints
+- **Comprehensive Testing**: Full test coverage with RSpec
 
 ## Why These Prerequisites Are Needed
 
