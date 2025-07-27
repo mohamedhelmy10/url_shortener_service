@@ -15,6 +15,21 @@ A Rails API service that provides URL shortening functionality. Users can encode
 
 To run this application locally, please refer to the detailed setup instructions in [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md).
 
+## Deployment
+
+This URL shortener service is deployed on **Render.com** and is production-ready.
+
+### 🚀 **Live Demo**
+- **URL**: https://url-shortener-service-3d73.onrender.com
+- **Status**: Production Ready ✅
+
+### 📋 **Infrastructure**
+- **Web Service**: Ruby on Rails API (Ruby 3.4.5, Rails 8.0.2)
+- **Database**: PostgreSQL 14+ with automatic backups
+- **Platform**: Render.com Free Tier
+- **Auto-deploy**: Enabled on push to main branch
+- **Security**: HTTPS, SSL/TLS, isolated database
+
 ## Security Considerations
 
 This URL shortener service implements several security measures to protect against common attack vectors:
@@ -243,3 +258,26 @@ end
 This scaling approach ensures the service can grow from handling hundreds of requests per day to millions, while maintaining performance and reliability.
 
 ## API Endpoints
+
+**Live Demo:** https://url-shortener-service-3d73.onrender.com
+
+### 🚀 Quick Test
+
+Try the API right now with these examples:
+
+**Encode a URL:**
+```bash
+curl -X POST https://url-shortener-service-3d73.onrender.com/encode \
+  -H "Content-Type: application/json" \
+  -d '{"original_url": "https://www.google.com/test"}'
+```
+
+**Decode a short code:**
+```bash
+curl -X GET "https://url-shortener-service-3d73.onrender.com/decode?short_code=abc123"
+```
+
+### Base URL
+```
+https://url-shortener-service-3d73.onrender.com
+```
