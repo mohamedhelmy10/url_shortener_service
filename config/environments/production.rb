@@ -32,6 +32,11 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :memory_store, { size: 64 * 1024 * 1024 }
 
+
+  config.after_initialize do
+    Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
+  end
+
   # Replace the default in-process and non-durable queuing backend for Active Job.
   config.active_job.queue_adapter = :async
 
