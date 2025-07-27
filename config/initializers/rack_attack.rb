@@ -1,5 +1,5 @@
 class Rack::Attack
-  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
+  Rack::Attack.cache.store = ActiveSupport::Cache::DatabaseStore.new
 
   throttle("encode by ip", limit: 2, period: 1.minute) do |request|
     if request.path == "/encode" && request.post?
